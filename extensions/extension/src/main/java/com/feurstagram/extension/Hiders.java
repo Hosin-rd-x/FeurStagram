@@ -38,7 +38,7 @@ public final class Hiders {
         // "blocking reels hid its tab" behaviour.
         observer.addOnGlobalLayoutListener(new HomeTabHider(root));
         observer.addOnGlobalLayoutListener(new VisibilityHider(root, "nav_show_search", true, true, null, "search_tab"));
-        observer.addOnGlobalLayoutListener(new VisibilityHider(root, "nav_show_reels", false, true, null, "clips_tab"));
+        observer.addOnGlobalLayoutListener(new VisibilityHider(root, "nav_show_reels", true, true, null, "clips_tab"));
         observer.addOnGlobalLayoutListener(new VisibilityHider(root, "nav_show_create", true, true, null, "creation_tab"));
         observer.addOnGlobalLayoutListener(new VisibilityHider(root, "nav_show_direct", true, true, null, "direct_tab"));
         observer.addOnGlobalLayoutListener(new VisibilityHider(root, "nav_show_profile", true, true, null, "profile_tab"));

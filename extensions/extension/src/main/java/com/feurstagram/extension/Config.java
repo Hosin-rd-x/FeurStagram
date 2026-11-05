@@ -124,9 +124,9 @@ public final class Config {
         return getBlocked("limit_following_feed", false);
     }
 
-    public static boolean isFeedBlocked()      { return getBlocked("block_feed", true); }
-    public static boolean isExploreBlocked()   { return getBlocked("block_explore", true); }
-    public static boolean isReelsBlocked()     { return getBlocked("block_reels", true); }
+    public static boolean isFeedBlocked()      { return getBlocked("block_feed", false); }
+    public static boolean isExploreBlocked()   { return getBlocked("block_explore", false); }
+    public static boolean isReelsBlocked()     { return getBlocked("block_reels", false); }
     /**
      * Whether the "Friends" tab and its avatar facepile are hidden from the Reels
      * viewer's header. On by default: Instagram gates that entry point behind a
@@ -134,10 +134,10 @@ public final class Config {
      * reachable from an internal developer menu, so the only way out is to drop
      * it from the view tree — issue #94.
      */
-    public static boolean isFriendsLaneBlocked() { return getBlocked("block_friends_lane", true); }
+    public static boolean isFriendsLaneBlocked() { return getBlocked("block_friends_lane", false); }
     public static boolean isStoriesBlocked()   { return getBlocked("block_stories", false); }
-    public static boolean isInstantsBlocked()  { return getBlocked("block_instants", true); }
-    public static boolean isNotesBlocked()     { return getBlocked("block_notes", true); }
+    public static boolean isInstantsBlocked()  { return getBlocked("block_instants", false); }
+    public static boolean isNotesBlocked()     { return getBlocked("block_notes", false); }
     public static boolean isSuggestedBlocked() { return getBlocked("block_suggested", true); }
     public static boolean isAdsBlocked()       { return getBlocked("block_ads", true); }
 
@@ -164,7 +164,7 @@ public final class Config {
      * *icon* is decoupled from blocking Reels *content*. Reels defaults to hidden
      * to preserve the previous behaviour (blocking reels used to also hide the tab).
      */
-    public static boolean isReelsTabShown() { return getBlocked("nav_show_reels", false); }
+    public static boolean isReelsTabShown() { return getBlocked("nav_show_reels", true); }
 
     /**
      * Whether the Home icon is on the bar (issue #127). Long-pressing a tab is the

@@ -42,7 +42,10 @@ import java.util.List;
  * Home hidden, the first tab on the bar) is long-pressed. Built entirely in code
  * (no bundled resources) and persisted through {@link Config}.
  *
- * <h3>The look: Material 3 Expressive, monochrome</h3>
+ * <h3>The look: iOS (dark) grouped-inset style, fork by Hosin-rd-x</h3>
+ * iOS system colours (blue accent, red destructive), inset grouped lists with
+ * hairline separators, large bold title, rounded-rect buttons, iOS switches.
+ * The notes below describe the upstream Material design it replaced.
  * White is the only accent — no hue anywhere, so the panel reads as part of a
  * dark OS rather than as a themed app. The Expressive part is in the shapes and
  * the type: large corner radii, options grouped into "connected" lists where the
@@ -67,39 +70,39 @@ public final class Settings {
     // --- Colour: a neutral dark scheme with white as the single accent --------
 
     /** Page background. */
-    public static final int SURFACE = 0xFF0E0E0E;
+    public static final int SURFACE = 0xFF000000;
     /** Cards, list rows. */
-    public static final int SURFACE_CONTAINER = 0xFF1B1B1B;
+    public static final int SURFACE_CONTAINER = 0xFF1C1C1E;
     /** One step up: tonal buttons, the raised confirm card. */
-    public static final int SURFACE_CONTAINER_HIGH = 0xFF262626;
-    public static final int ON_SURFACE = 0xFFF4F4F4;
-    public static final int ON_SURFACE_VARIANT = 0xFFABABAB;
-    public static final int OUTLINE = 0xFF757575;
-    public static final int OUTLINE_VARIANT = 0xFF3A3A3A;
+    public static final int SURFACE_CONTAINER_HIGH = 0xFF2C2C2E;
+    public static final int ON_SURFACE = 0xFFFFFFFF;
+    public static final int ON_SURFACE_VARIANT = 0xFF8E8E93;
+    public static final int OUTLINE = 0xFF636366;
+    public static final int OUTLINE_VARIANT = 0xFF38383A;
     /** The accent. Monochrome by design: white. */
-    public static final int PRIMARY = 0xFFFFFFFF;
-    public static final int ON_PRIMARY = 0xFF101010;
+    public static final int PRIMARY = 0xFF0A84FF;
+    public static final int ON_PRIMARY = 0xFFFFFFFF;
     /**
      * Destructive actions. A monochrome scheme has no red to lean on, so they
      * carry the same accent and are distinguished by their wording instead.
      */
-    public static final int ERROR = 0xFFFFFFFF;
-    public static final int ON_ERROR = 0xFF101010;
-    public static final int DIVIDER = 0xFF2A2A2A;
-    public static final int RIPPLE = 0x26FFFFFF;
+    public static final int ERROR = 0xFFFF453A;
+    public static final int ON_ERROR = 0xFFFFFFFF;
+    public static final int DIVIDER = 0xFF38383A;
+    public static final int RIPPLE = 0x1FFFFFFF;
 
     // --- Shape: the M3 Expressive corner scale --------------------------------
 
     /** Dialog / card corners. */
-    private static final float CORNER_XL = 28f;
+    private static final float CORNER_XL = 14f;
     /** The outer corners of a connected list group. */
-    private static final float CORNER_L = 24f;
+    private static final float CORNER_L = 10f;
     /** The joints inside a connected list group. */
-    private static final float CORNER_JOINT = 4f;
+    private static final float CORNER_JOINT = 0f;
     /** Larger than half a view's height, so it renders as a pill. */
     private static final float CORNER_FULL = 200f;
     /** Gap between the rows of a connected group. */
-    private static final int ROW_GAP_DP = 3;
+    private static final int ROW_GAP_DP = 0;
 
     private Settings() {}
 
@@ -694,7 +697,7 @@ public final class Settings {
         Runnable refresh = preview::refresh;
         addRow(context, nav, "Home", "nav_show_home", Config.getBlocked("nav_show_home", true), refresh);
         addRow(context, nav, "Search", "nav_show_search", Config.getBlocked("nav_show_search", true), refresh);
-        addRow(context, nav, "Reels", "nav_show_reels", Config.getBlocked("nav_show_reels", false), refresh);
+        addRow(context, nav, "Reels", "nav_show_reels", Config.getBlocked("nav_show_reels", true), refresh);
         addRow(context, nav, "Create", "nav_show_create", Config.getBlocked("nav_show_create", true), refresh);
         addRow(context, nav, "Messages", "nav_show_direct", Config.getBlocked("nav_show_direct", true), refresh);
         addRow(context, nav, "Profile", "nav_show_profile", Config.getBlocked("nav_show_profile", true), refresh);
@@ -1153,12 +1156,12 @@ public final class Settings {
     /** A sentence-case section label, M3 Expressive style (not all-caps). */
     private static void addSectionLabel(Context context, LinearLayout parent, String text) {
         TextView label = new TextView(context);
-        label.setText(text);
+        label.setText(text == null ? null : text.toUpperCase(java.util.Locale.ROOT));
         label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
         label.setTextColor(ON_SURFACE_VARIANT);
-        label.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-        label.setLetterSpacing(0.01f);
-        label.setPadding(dp(context, 16), dp(context, 24), dp(context, 16), dp(context, 8));
+        label.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
+        label.setLetterSpacing(0.02f);
+        label.setPadding(dp(context, 16), dp(context, 28), dp(context, 16), dp(context, 7));
         parent.addView(label);
     }
 
@@ -1181,8 +1184,20 @@ public final class Settings {
             View row = group.getChildAt(i);
             float top = i == 0 ? CORNER_L : CORNER_JOINT;
             float bottom = i == count - 1 ? CORNER_L : CORNER_JOINT;
-            row.setBackground(ripple(RIPPLE,
-                    roundedRect(SURFACE_CONTAINER, context, top, top, bottom, bottom)));
+            Drawable cell = roundedRect(SURFACE_CONTAINER, context, top, top, bottom, bottom);
+            if (i < count - 1) {
+                // iOS hairline separator, inset from the leading edge.
+                GradientDrawable line = new GradientDrawable();
+                line.setColor(DIVIDER);
+                android.graphics.drawable.LayerDrawable layered =
+                        new android.graphics.drawable.LayerDrawable(new Drawable[]{cell, line});
+                int hair = Math.max(1, dp(context, 0.5f));
+                layered.setLayerGravity(1, Gravity.BOTTOM | Gravity.FILL_HORIZONTAL);
+                layered.setLayerHeight(1, hair);
+                layered.setLayerInsetStart(1, dp(context, 16));
+                cell = layered;
+            }
+            row.setBackground(ripple(RIPPLE, cell));
             if (i < count - 1) {
                 ViewGroup.LayoutParams lp = row.getLayoutParams();
                 if (lp instanceof LinearLayout.LayoutParams) {
@@ -1198,15 +1213,15 @@ public final class Settings {
         LinearLayout row = new LinearLayout(context);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(dp(context, 20), dp(context, 16), dp(context, 20), dp(context, 16));
-        row.setMinimumHeight(dp(context, 64));
+        row.setPadding(dp(context, 16), dp(context, 11), dp(context, 16), dp(context, 11));
+        row.setMinimumHeight(dp(context, 44));
 
         LinearLayout texts = new LinearLayout(context);
         texts.setOrientation(LinearLayout.VERTICAL);
 
         TextView labelView = new TextView(context);
         labelView.setText(label);
-        labelView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
+        labelView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17f);
         labelView.setTextColor(ON_SURFACE);
         texts.addView(labelView);
 
@@ -1339,17 +1354,18 @@ public final class Settings {
 
     /** The page headline: large, tight-tracked, medium weight. */
     public static void headline(TextView view) {
-        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30f);
+        // iOS "Large Title": 34pt bold.
+        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 34f);
         view.setTextColor(ON_SURFACE);
-        view.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-        view.setLetterSpacing(-0.02f);
+        view.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
+        view.setLetterSpacing(0.01f);
     }
 
     /** A card or dialog title. */
     public static void titleLarge(TextView view) {
-        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f);
+        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f);
         view.setTextColor(ON_SURFACE);
-        view.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        view.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
         view.setLetterSpacing(-0.01f);
     }
 
@@ -1392,7 +1408,7 @@ public final class Settings {
 
     /** A transparent pill with a hairline border, for low-emphasis buttons. */
     public static Drawable outlined(Context context, int strokeColor) {
-        GradientDrawable shape = roundedRect(Color.TRANSPARENT, CORNER_FULL, context);
+        GradientDrawable shape = roundedRect(Color.TRANSPARENT, CORNER_XL, context);
         shape.setStroke(dp(context, 1), strokeColor);
         return ripple(RIPPLE, shape);
     }
@@ -1416,16 +1432,16 @@ public final class Settings {
         button.setText(text);
         button.setAllCaps(false);
         button.setTextColor(textColor);
-        button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
+        button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17f);
         button.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         button.setLetterSpacing(0f);
-        button.setMinHeight(dp(context, 52));
-        button.setMinimumHeight(dp(context, 52));
+        button.setMinHeight(dp(context, 50));
+        button.setMinimumHeight(dp(context, 50));
         button.setPadding(dp(context, 20), 0, dp(context, 20), 0);
         button.setStateListAnimator(null);
         button.setBackground(filled
-                ? ripple(RIPPLE, roundedRect(bgColor, CORNER_FULL, context))
-                : ripple(RIPPLE, roundedRect(Color.TRANSPARENT, CORNER_FULL, context)));
+                ? ripple(RIPPLE, roundedRect(bgColor, CORNER_XL, context))
+                : ripple(RIPPLE, roundedRect(Color.TRANSPARENT, CORNER_XL, context)));
         return button;
     }
 

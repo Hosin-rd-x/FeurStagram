@@ -5,17 +5,15 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.RectF;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.animation.PathInterpolator;
 import android.widget.CompoundButton;
 
-/** Resource-free Material 3 switch, using the shared monochrome settings palette. */
+/** Resource-free iOS-style (UISwitch) toggle. */
 final class ExpressiveSwitch extends CompoundButton {
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF track = new RectF();
-    private final Path check = new Path();
     private float position;
     private float press;
     private ValueAnimator movement;
@@ -32,7 +30,7 @@ final class ExpressiveSwitch extends CompoundButton {
 
     @Override
     protected void onMeasure(int widthSpec, int heightSpec) {
-        setMeasuredDimension(resolveSize(dp(64), widthSpec), resolveSize(dp(48), heightSpec));
+        setMeasuredDimension(resolveSize(dp(59), widthSpec), resolveSize(dp(44), heightSpec));
     }
 
     @Override
@@ -65,8 +63,8 @@ final class ExpressiveSwitch extends CompoundButton {
 
     private ValueAnimator animateValue(float from, float to, Frame frame) {
         ValueAnimator animator = ValueAnimator.ofFloat(from, to);
-        animator.setDuration(200L);
-        animator.setInterpolator(new PathInterpolator(0.2f, 0f, 0f, 1f));
+        animator.setDuration(250L);
+        animator.setInterpolator(new PathInterpolator(0.25f, 0.1f, 0.25f, 1f));
         animator.addUpdateListener(value -> {
             frame.apply((float) value.getAnimatedValue());
             invalidate();
@@ -75,45 +73,35 @@ final class ExpressiveSwitch extends CompoundButton {
         return animator;
     }
 
+    /** iOS switch colours: system green when on, dark fill when off, white knob. */
+    private static final int IOS_ON = 0xFF30D158;
+    private static final int IOS_OFF = 0xFF39393D;
+
     @Override
     protected void onDraw(Canvas canvas) {
+        // iOS UISwitch metrics: 51 x 31 track, 27 knob, 2 inset; the knob
+        // stretches sideways while pressed.
         float scale = getResources().getDisplayMetrics().density;
-        float left = (getWidth() - 52f * scale) / 2f;
+        float w = 51f * scale, h = 31f * scale, r = h / 2f;
+        float left = (getWidth() - w) / 2f;
         float centerY = getHeight() / 2f;
-        track.set(left, centerY - 16f * scale, left + 52f * scale, centerY + 16f * scale);
+        track.set(left, centerY - r, left + w, centerY + r);
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(blend(Settings.SURFACE_CONTAINER_HIGH, Settings.PRIMARY, position));
-        canvas.drawRoundRect(track, 16f * scale, 16f * scale, paint);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(2f * scale);
-        paint.setColor(blend(Settings.OUTLINE, Settings.PRIMARY, position));
-        track.inset(scale, scale);
-        canvas.drawRoundRect(track, 15f * scale, 15f * scale, paint);
+        paint.setColor(blend(IOS_OFF, IOS_ON, position));
+        if (!isEnabled()) paint.setAlpha(110);
+        canvas.drawRoundRect(track, r, r, paint);
 
+        float knob = 27f * scale, inset = 2f * scale;
+        float stretch = 7f * scale * press;
         float offset = getLayoutDirection() == LAYOUT_DIRECTION_RTL ? 1f - position : position;
-        float centerX = left + (16f + 20f * offset) * scale;
-        paint.setStyle(Paint.Style.FILL);
-        if (press > 0f || isFocused()) {
-            paint.setColor(Color.argb((int) (31f * Math.max(press, isFocused() ? 1f : 0f)), 255, 255, 255));
-            canvas.drawCircle(centerX, centerY, 20f * scale, paint);
-        }
-        float diameter = 16f + 8f * position;
-        diameter += (28f - diameter) * press;
-        paint.setColor(blend(Settings.OUTLINE, Settings.ON_PRIMARY, position));
-        canvas.drawCircle(centerX, centerY, diameter * scale / 2f, paint);
-
-        if (position > 0f) {
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(2f * scale);
-            paint.setStrokeCap(Paint.Cap.ROUND);
-            paint.setStrokeJoin(Paint.Join.ROUND);
-            paint.setColor(Color.argb((int) (255f * position), 255, 255, 255));
-            check.reset();
-            check.moveTo(centerX - 4f * scale, centerY);
-            check.lineTo(centerX - scale, centerY + 3f * scale);
-            check.lineTo(centerX + 5f * scale, centerY - 4f * scale);
-            canvas.drawPath(check, paint);
-        }
+        float travel = w - 2 * inset - knob - stretch;
+        float knobLeft = left + inset + travel * offset;
+        RectF k = new RectF(knobLeft, centerY - knob / 2f, knobLeft + knob + stretch, centerY + knob / 2f);
+        paint.setColor(Color.argb(60, 0, 0, 0));
+        canvas.drawRoundRect(new RectF(k.left, k.top + 1.5f * scale, k.right, k.bottom + 1.5f * scale), knob / 2f, knob / 2f, paint);
+        paint.setColor(Color.WHITE);
+        if (!isEnabled()) paint.setAlpha(160);
+        canvas.drawRoundRect(k, knob / 2f, knob / 2f, paint);
     }
 
     @Override

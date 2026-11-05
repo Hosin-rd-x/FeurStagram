@@ -74,7 +74,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class UpdateChecker implements Runnable {
 
-    private static final String REPO = "jean-voila/Feurstagram";
+    private static final String REPO = "Hosin-rd-x/FeurStagram";
     private static final String LATEST_API = "https://api.github.com/repos/" + REPO + "/releases/latest";
     private static final String LATEST_PAGE = "https://github.com/" + REPO + "/releases/latest";
     private static final String RELEASE_BY_TAG = "https://api.github.com/repos/" + REPO + "/releases/tags/";
