@@ -50,6 +50,13 @@ jobs:
           chmod +x gradlew build.sh
           ./build.sh instagram.xapk --clone
           mv feurstagram.apk RdxGram-ios-$(cat ig_version.txt).apk
+          python3 -c "import json;r=json.load(open('build/patch-report.json'));print(json.dumps(r,indent=1)[:6000])"
+
+      - name: Verify iOS font
+        run: |
+          pip install -q fonttools
+          mkdir -p chk && cd chk && unzip -q -o ../RdxGram-ios-*.apk 'res/*.ttf' || true
+          python3 -c "import glob;from fontTools.ttLib import TTFont;[print(p, TTFont(p,lazy=True)['name'].getDebugName(4)) for p in sorted(glob.glob('res/*.ttf'))]"
 
       - name: Release
         env:
